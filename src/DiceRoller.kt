@@ -1,5 +1,3 @@
-import kotlin.random.Random
-
 fun main() {
     loop@ while (true) {
         print("> ")
@@ -25,7 +23,7 @@ fun sumCommand(userInput: List<String>): String {
 
 fun parseRoll(userInput: String): DiceRollResult {
     try {
-        userInput.split("d").filter { it.isNotEmpty() }.map(String::toInt).let {
+        userInput.split("d").filter(String::isNotEmpty).map(String::toInt).let {
             val numRolls = when (it.size) {
                 1    -> 1
                 else -> it.first()
@@ -40,29 +38,7 @@ fun parseRoll(userInput: String): DiceRollResult {
 }
 
 fun formatRollStrings(rolls: List<DiceRollResult>): List<DiceRollResult> {
-    val maxStringLength =
-            rolls.filterIsInstance<SuccessfulDiceRollSet>()
-                .flatMap(SuccessfulDiceRollSet::asListOfStrings)
-                .map { it.substringBefore(":").length + 1 }
-                .max()
-                ?: 0
+    val maxStringLength = rolls.maxStringLength()
     rolls.filterIsInstance<SuccessfulDiceRollSet>().forEach { it.padding = maxStringLength }
     return rolls
-}
-
-sealed class DiceRollResult
-
-class SuccessfulDiceRollSet(private val sides: Int, rolls: Int, var padding: Int = 0) : DiceRollResult() {
-    
-    private val values: List<Int> = (1..rolls).map { Random.nextInt(1, sides + 1) }
-    
-    override fun toString(): String = asListOfStrings().joinToString("\n")
-    
-    fun asListOfStrings(): List<String> = values.mapIndexed { index, value -> "D$sides roll #${index + 1}:".padStart(padding) + "\t$value" }
-    
-    fun sumValues(): Int = values.sum()
-}
-
-class DiceRollError(private val msg: String) : DiceRollResult() {
-    override fun toString(): String = msg
 }
